@@ -1,6 +1,6 @@
 import threading
 import time
-from task import *
+from Task import *
 
 MAX_THREAD_NUM = 100
 
