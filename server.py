@@ -1,7 +1,8 @@
 import os,sys
-sys.path.append("."+os.path.sep+"server")
+sys.path.append("./server")
+sys.path.append("./common")
 from socket import *
-from task import *
+from Task import *
 from ThreadManager import *
 from ServerReceiveTask import *
 
@@ -13,7 +14,14 @@ if __name__ == '__main__':
 	socket.bind((host, port))
 	socket.listen(5000)
 
+	taskManager = TaskManager(50)
+	startTime = time.clock()
+
 	while(True):
 		tempSocket,address = socket.accept()
 		serverReceiveTask = ServerReceiveTask(tempSocket,address)
-		serverReceiveTask.run()
+		taskManager.insertTask(serverReceiveTask)
+
+	taskManager.setStop()
+	endTime = time.clock()
+	print(endTime - startTime)

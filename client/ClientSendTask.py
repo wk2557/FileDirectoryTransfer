@@ -1,9 +1,11 @@
 import os
 import sys
-from struct import *
+sys.path.append("../common/")
 from socket import *
+from struct import *
+from Task import *
 
-class ClientSendTask:
+class ClientSendTask(Task):
 
 	def __init__(self):
 		pass

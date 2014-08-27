@@ -1,9 +1,10 @@
 import os
-import platform
+import sys
 from socket import *
 from struct import *
+from Task import *
 
-class ServerReceiveTask:
+class ServerReceiveTask(Task):
 	def __init__(self, socket, address):
 		self.socket = socket
 		self.address = address

@@ -1,8 +1,8 @@
 import os, sys
-sys.path.append("."+os.path.sep+"client")
+sys.path.append("./client")
+sys.path.append("./common")
 from socket import *
-from struct import *
-from task import *
+from Task import *
 from ThreadManager import *
 from ClientSendTask import *
 
