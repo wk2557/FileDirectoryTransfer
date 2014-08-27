@@ -29,25 +29,31 @@ class TaskManager:
 		self.waitingList = MyQueue()
 		self.threadProxies = []
 		self.stop = False
+		self.semaphore = threading.Semaphore(0)
 		for i in range (self.max_thread_num):
 			self.threadProxies.append(ThreadProxy(self))
 
 	def insertTask(self, task):
 		self.waitingListMutex.acquire()
 		self.waitingList.enqueue(task)
-		print ("insert, len is %d" % self.waitingList.size())
+		self.semaphore.release()
+		#print ("insert, len is %d" % self.waitingList.size())
 		self.waitingListMutex.release()
 
 
 	def pickUp(self):
+		self.semaphore.acquire()
 		self.waitingListMutex.acquire()
 		picked = self.waitingList.dequeue()
-		print ("pickUp, len is %d" % self.waitingList.size())
+		#print ("pickUp, len is %d" % self.waitingList.size())
 		self.waitingListMutex.release()
 		return picked
 
 	def setStop(self):
 		self.stop = True
+		for i in range (len(self.threadProxies)):
+			self.semaphore.release()
+			
 		for item in self.threadProxies:
 			item.join()
 
@@ -62,6 +68,7 @@ class ThreadProxy(threading.Thread):
 			picked = self.taskManager.pickUp()
 			if picked != None:
 				picked.run()
+			print ("finish")
 
 
 class TestTask(Task):
@@ -70,12 +77,13 @@ class TestTask(Task):
 
 
 if __name__ == '__main__':
-	tm = TaskManager(50)
+	tm = TaskManager(10)
 	starttime = time.clock()
 
-	for i in range(50):
+	for i in range(5):
 		t = TestTask();
 		tm.insertTask(t)
+
 
 
 	tm.setStop()
