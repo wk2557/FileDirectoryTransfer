@@ -2,6 +2,8 @@ import os, sys
 sys.path.append("."+os.path.sep+"client")
 from socket import *
 from struct import *
+from task import *
+from ThreadManager import *
 from ClientSendTask import *
 
 if __name__ == '__main__':

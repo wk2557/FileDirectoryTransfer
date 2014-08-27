@@ -1,7 +1,9 @@
 import os,sys
 sys.path.append("."+os.path.sep+"server")
 from socket import *
-from ServerReceiveTask import ServerReceiveTask
+from task import *
+from ThreadManager import *
+from ServerReceiveTask import *
 
 if __name__ == '__main__':
 
