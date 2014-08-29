@@ -13,14 +13,21 @@ if __name__ == '__main__':
 	socket = socket(AF_INET, SOCK_STREAM)
 	socket.bind((host, port))
 	socket.listen(5000)
+	commandLength = 2
 
 	taskManager = TaskManager(50)
 	startTime = time.clock()
 
 	while(True):
 		tempSocket,address = socket.accept()
-		serverReceiveTask = ServerReceiveTask(tempSocket,address)
-		taskManager.insertTask(serverReceiveTask)
+		command = tempSocket.recv(commandLength)
+		print('command is' + command + '\n')
+		if command == '-s':
+			serverReceiveTask = ServerReceiveTask(tempSocket,address)
+			taskManager.insertTask(serverReceiveTask)
+		else:
+			serverSendTask = ServerSendTask(tempSocket,address)
+			taskManager.insertTask(serverSendTask)
 
 	taskManager.setStop()
 	endTime = time.clock()

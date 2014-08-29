@@ -14,7 +14,7 @@ class ClientSendTask(Task):
 		self.destHost = destHost
 		self.destPort = destPort
 		self.bufferSize = 8 * 1024
-		self.socket = socket(AF_INET, SOCK_STREAM)		
+		self.command = '-s'
 		print("init: destination host and port are %s:%s" % (destHost, destPort))
 
 	def SetDestHostAndPort(self, destHost, destPort):
@@ -23,47 +23,70 @@ class ClientSendTask(Task):
 		print("SetDestHostAndPort: destination host and port are %s:%s" % (destHost, destPort))
 	
 	def SetSourAndDestDir(self, sourDir, destDir):
-		self.sourDir = sourDir
-		self.destDir = destDir
-		print("SetSourAndDestDir: source and destination directory are %s:%s" % (sourDir, destDir))
+		self.sourDir = sourDir.strip(' \t')
+		if self.sourDir[-1] == os.path.sep:
+			self.sourDir = self.sourDir[0:-1]
+		print('source is %s' % self.sourDir)
 
+		if not os.path.exists(self.sourDir):
+			print('source directory or file %s does not exist!\n' % self.sourDir)
+			return
+
+		self.destDir = destDir.strip(' \t')
+		if self.destDir[-1] == os.path.sep:
+			self.destDir = self.destDir[0:-1]
+		print('destination is %s' % self.destDir)
 
 	def ParseDir(self, curDir, files):
-		if os.path.isdir(curDir):
-			listOfFiles = os.listdir(curDir)
+		if len(curDir) == 0 and not os.path.isdir(self.sourDir):
+			self.sourDir,file = os.path.split(self.sourDir)
+			files.append(os.path.sep + file)
+			return
+
+		if os.path.isdir(self.sourDir + curDir):
+			listOfFiles = os.listdir(self.sourDir + curDir)
 			for theFile in listOfFiles:
 				self.ParseDir(curDir + os.path.sep + theFile, files)
 		else:
 			files.append(curDir)
 
-	def SendFile(self, file):
-		if not os.path.exists(file):
-			print ("file: %s doesn't exist" % file)
+	def SendFile(self, fileName):
+		sourFile = self.sourDir + fileName
+		destFile = self.destDir + fileName
+		if not os.path.exists(sourFile):
+			print ("file: %s doesn't exist" % sourFile)
 			sys.exit()
 		
-		print ("begin to send file: %s" % file)
+		#print ("begin to send file: %s" % sourFile)
+		#print ("dest host and part are %s-%d" % (self.destHost,self.destPort))
 
-		self.socket.connect((self.destHost, self.destPort))	
-		head = pack('!128sI', self.destDir, os.stat(file).st_size)
-		self.socket.send(head)
-		fileHandler = open(file, 'rb')
+		tempSocket = socket(AF_INET, SOCK_STREAM)		
+		tempSocket.connect((self.destHost, self.destPort))	
+
+		tempSocket.send(self.command)
+
+		head = pack('!128sI', destFile, os.stat(sourFile).st_size)
+		tempSocket.send(head)
+		file = open(sourFile, 'rb')
 		while True:
-			data = fileHandler.read(self.bufferSize)
+			data = file.read(self.bufferSize)
 			if not data:
 				break
-			self.socket.send(data)
+			tempSocket.send(data)
 
-#		print ("End of send file: %s" % file)
-
-		fileHandler.close()
-		self.socket.close()
+		file.close()
+		tempSocket.close()
+		#print ("end to send file: %s" % sourFile)
 
 
 	def run(self):
-		files = []
-		self.ParseDir(self.sourDir, files)
-		print("the files to tranfer are %s" % files)
-		for file in files:
-			self.SendFile(file)
+		fileNames = []
+		self.ParseDir('', fileNames)
+		#print("the files to tranfer are %s" % fileNames)
+		
+		for fileName in fileNames:
+			self.SendFile(fileName)
+
+		print("files transferring are already completed.")
 
 

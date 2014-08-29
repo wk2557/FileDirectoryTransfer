@@ -7,16 +7,27 @@ from ThreadManager import *
 from ClientSendTask import *
 
 if __name__ == '__main__':
-	if len(sys.argv) < 3:
-		print ("not enough args, please input source, des-machine and des-path")
+	if len(sys.argv) < 4:
+		print ("not enough args, please input machine name, command, source path, and des-path")
 		sys.exit()
 
 	destHost = sys.argv[1]
 	destPort = 8973
-	sourDir = sys.argv[2]
-	destDir = sys.argv[3]
+	command = sys.argv[2]
+	sourDir = sys.argv[3]
+	destDir = sys.argv[4]
 
-	clientSendTask = ClientSendTask(destHost, destPort)
-	clientSendTask.SetSourAndDestDir(sourDir, destDir)
+	taskManager = TaskManager(1)
+	startTime = time.clock()
 
-	clientSendTask.run()
+	if command == '-s':
+		clientSendTask = ClientSendTask(destHost, destPort)
+		clientSendTask.SetSourAndDestDir(sourDir, destDir)
+		taskManager.insertTask(clientSendTask)
+	else:
+		pass
+		#clientReceiveTask = ClientReceiveTask(destHost, destPort)
+	
+	taskManager.setStop()
+	endTime = time.clock()
+	print(endTime - startTime)

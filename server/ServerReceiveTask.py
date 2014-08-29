@@ -9,18 +9,17 @@ class ServerReceiveTask(Task):
 		self.socket = socket
 		self.address = address
 		self.bufferSize = 8*1024
-		print ("init a ServerReceiveTask")
+		#print ("init a ServerReceiveTask")
 
 	def run(self):
-		print("start to receive data")
+		#print("start to receive data")
 
 		while True:
 			headLength = calcsize('!128sI')
 			head = self.socket.recv(headLength)
-			print('head is %s' % head)
-
 			fileName, fileSize = unpack('!128sI', head)
 			fileName = fileName.strip('\00')
+			#print('filename and size is %s %d' % (fileName,fileSize))
 
 			self.ValidateFile(fileName)
 			file = open(fileName, 'wb')
@@ -31,14 +30,17 @@ class ServerReceiveTask(Task):
 			receiveSize = 0
 			while(True):
 				body = self.socket.recv(self.bufferSize)
-				print('body is %s' % body)
+				#print('body is %s' % body)
 
 				file.write(body)
 				receiveSize += len(body)
+				#print('%d of %d byes of data are received' % (receiveSize,fileSize))
 				if receiveSize == fileSize:
 					file.close()
 					break
-		close(self.socket)
+				
+			self.socket.close()
+			break
 
 	def ValidateFile(self, filePath):
 		directory, fileName = os.path.split(filePath)
