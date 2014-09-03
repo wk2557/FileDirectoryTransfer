@@ -61,16 +61,20 @@ class ClientSendTask(Task):
 		#print ("begin to send file: %s" % sourFile)
 		#print ("dest host and part are %s-%d" % (self.destHost,self.destPort))
 
-		head = pack('!128sI', destFile, os.stat(sourFile).st_size)
-		self.socket.send(head)
-		file = open(sourFile, 'rb')
-		while True:
-			data = file.read(self.bufferSize)
-			if not data:
-				break
-			self.socket.send(data)
+		try:
+			file = open(sourFile, 'rb')
+			head = pack('!128sI', destFile, os.stat(sourFile).st_size)
+			self.socket.send(head)
+			while True:
+				data = file.read(self.bufferSize)
+				if not data:
+					break
+				self.socket.send(data)
+			file.close()
+		except IOError, ioError:
+			print(ioError)
+			pass
 
-		file.close()
 		#print ("end to send file: %s" % sourFile)
 
 

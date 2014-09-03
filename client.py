@@ -19,7 +19,7 @@ class ClientController:
 		self.parser.add_argument('-d', action = "store", dest = "destDir", help = "destination directory to store")
 		
 		self.commandFactory = Command.CommandFactory()
-		self.taskManager = TaskManager(1)
+		self.taskManager = TaskManager(5)
 
 	def run(self):
 		while True:
@@ -49,6 +49,8 @@ class ClientController:
 			except SystemExit:
 				self.taskManager.setStop()
 				sys.exit(0)
+			except:
+				pass
 
 			finally:
 				#self.taskManager.setStop()
