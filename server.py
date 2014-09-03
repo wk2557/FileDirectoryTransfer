@@ -5,6 +5,7 @@ from socket import *
 from Task import *
 from ThreadManager import *
 from ServerReceiveTask import *
+from ServerSendTask import *
 
 if __name__ == '__main__':
 
@@ -21,7 +22,6 @@ if __name__ == '__main__':
 	while(True):
 		tempSocket,address = socket.accept()
 		command = tempSocket.recv(commandLength)
-		print('command is' + command + '\n')
 		if command == '-s':
 			serverReceiveTask = ServerReceiveTask(tempSocket,address)
 			taskManager.insertTask(serverReceiveTask)

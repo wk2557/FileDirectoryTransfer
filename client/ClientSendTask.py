@@ -15,8 +15,9 @@ class ClientSendTask(Task):
 		self.destPort = destPort
 		self.bufferSize = 8 * 1024
 		self.command = '-s'
+		self.socket = socket(AF_INET, SOCK_STREAM)		
 		print("init: destination host and port are %s:%s" % (destHost, destPort))
-
+	
 	def SetDestHostAndPort(self, destHost, destPort):
 		self.destHost = destHost
 		self.destPort = destPort
@@ -60,22 +61,16 @@ class ClientSendTask(Task):
 		#print ("begin to send file: %s" % sourFile)
 		#print ("dest host and part are %s-%d" % (self.destHost,self.destPort))
 
-		tempSocket = socket(AF_INET, SOCK_STREAM)		
-		tempSocket.connect((self.destHost, self.destPort))	
-
-		tempSocket.send(self.command)
-
 		head = pack('!128sI', destFile, os.stat(sourFile).st_size)
-		tempSocket.send(head)
+		self.socket.send(head)
 		file = open(sourFile, 'rb')
 		while True:
 			data = file.read(self.bufferSize)
 			if not data:
 				break
-			tempSocket.send(data)
+			self.socket.send(data)
 
 		file.close()
-		tempSocket.close()
 		#print ("end to send file: %s" % sourFile)
 
 
@@ -83,10 +78,13 @@ class ClientSendTask(Task):
 		fileNames = []
 		self.ParseDir('', fileNames)
 		#print("the files to tranfer are %s" % fileNames)
-		
+
+		self.socket.connect((self.destHost, self.destPort))	
+		self.socket.send(self.command)
+
 		for fileName in fileNames:
 			self.SendFile(fileName)
 
+		self.socket.close()
 		print("files transferring are already completed.")
-
 
